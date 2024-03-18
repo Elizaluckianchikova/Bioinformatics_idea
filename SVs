@@ -1,0 +1,43 @@
+import pysam
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# Извлечение признаков из BAM файла
+def extract_features_from_bam(bam_file):
+    features = []
+
+    with pysam.AlignmentFile(bam_file, "rb") as bam:
+        for read in bam:
+            # Извлечение признаков из каждого рида (например, длина вставки, глубина покрытия и т.д.)
+            feature = [len(read.seq), read.mapping_quality]
+            features.append(feature)
+
+    return np.array(features)
+
+# Подготовка данных для обучения модели
+bam_file = "your_input.bam"
+X = extract_features_from_bam(bam_file)
+y = np.random.randint(2, size=X.shape[0])  # Генерация случайных меток классов для примера
+
+# Разделение данных на обучающий и тестовый наборы
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Обучение наивного байесовского классификатора
+nb_classifier = GaussianNB()
+nb_classifier.fit(X_train, y_train)
+
+# Прогнозирование классов для тестового набора данных
+y_pred = nb_classifier.predict(X_test)
+
+# Оценка производительности модели
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+
+print("Accuracy:", accuracy)
+print("Precision:", precision)
+print("Recall:", recall)
+print("F1 Score:", f1)
